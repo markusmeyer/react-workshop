@@ -1,34 +1,15 @@
 import React, { Component } from 'react'
 import { Sensor } from '../lib/Sensor';
+import { ValueControl } from './ValueControl'
 
 type ClimateProps = { sensor: Sensor };
-type ClimateState = { temperature: number | null, humidity: number | null };
 
-class Climate extends Component<ClimateProps, ClimateState> {
-  state: ClimateState = {
-    temperature: null,
-    humidity: null,
-  };
-
-  componentDidMount() {
-    this.props.sensor.on('temperature', temperature => this.setState({ temperature }));
-    this.props.sensor.on('humidity', humidity => this.setState({ humidity }));
-  }
-
-  componentWillUnmount() {
-    this.props.sensor.clearListeners();
-  }
-
+class Climate extends Component<ClimateProps> {
   render() {
     return (
-      <div>
-        <div id="temperature">
-          Temperature: {this.state.temperature ?? '-'}
-        </div>
-
-        <div id="humidity">
-          Humidity: {this.state.humidity ?? '-'}
-        </div>
+      <div style={{backgroundColor: '#BDC4B4', padding: 10, margin: 30, width: 280}}>
+        <ValueControl valueType="temperature" sensor={this.props.sensor} title="Temperature"/>
+        <ValueControl valueType="humidity" sensor={this.props.sensor} title="Humidity"/>
       </div>
     );
   }
