@@ -8,28 +8,39 @@ interface ValueProps
   title: string;
 }
 
+interface Tuple
+{
+  value: number|undefined;
+  min: number|undefined;
+  max: number|undefined;
+}
+
 export const ValueControl: React.FC<ValueProps> = ({valueType, sensor, title}: ValueProps) =>
 {
-  const [value, setValue] = useState<number>();
-  const [minValue, setMinValue] = useState<number>();
-  const [maxValue, setMaxValue] = useState<number>();
+  const [tuple, setTuple] = useState<Tuple>({value:undefined, min:undefined, max:undefined});
 
-  useEffect(() => {
-    sensor.on(valueType, newValue =>
-      {
-        console.log(newValue + " " + minValue + " " + maxValue);
-        setValue(newValue);
-        if (!minValue || newValue < minValue)
-          setMinValue(newValue);
-        if (!maxValue || newValue > maxValue)
-          setMaxValue(newValue);
-      });
-      return () => sensor.clearListeners();
-  }, [valueType, sensor, minValue, maxValue]);
+  useEffect(() =>
+  {
+    function sensorValueChanged(newValue: number)
+    {
+      setTuple(oldTuple => ({
+        value: newValue,
+        min: !oldTuple.min || newValue < oldTuple.min ? newValue : oldTuple.min,
+        max: !oldTuple.max || newValue > oldTuple.max ? newValue : oldTuple.max,
+      }));
+    }
+
+    sensor.on(valueType, sensorValueChanged);
+
+    return () => sensor.off(valueType, sensorValueChanged);
+
+  }, [valueType, sensor]);
 
   const clearButtonClicked = () => {
-    setMinValue(value);
-    setMaxValue(value);
+    setTuple({
+      value: tuple.value,
+      min:tuple.value,
+      max:tuple.value});
   };
 
   const displayValue = (valueToDisplay: number|undefined) => {
@@ -39,13 +50,13 @@ export const ValueControl: React.FC<ValueProps> = ({valueType, sensor, title}: V
 
   return (
     <div id={valueType} style={{ width: 'auto', fontStretch: 'ultra-condensed' }}>
-      <div style={{ fontSize: '5em', textAlign: 'right' }}>{displayValue(value)}</div>
+      <div style={{ fontSize: '5em', textAlign: 'right' }}>{displayValue(tuple.value)}</div>
       <div style={{ border: 'solid 1px', borderRadius: 5 }}>
         <span style={{fontSize: '0.75em'}}>low</span>
         <span> </span>
-        <span style={{fontSize:'2em'}}>{displayValue(minValue)}</span>
+        <span style={{fontSize:'2em'}}>{displayValue(tuple.min)}</span>
         <span> </span>
-        <span style={{fontSize:'2em'}}>{displayValue(maxValue)}</span>
+        <span style={{fontSize:'2em'}}>{displayValue(tuple.max)}</span>
         <span> </span>
         <span style={{fontSize: '0.75em'}}>high</span>
       </div>
