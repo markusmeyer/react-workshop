@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
 import { Sensor } from '../lib/Sensor';
+import { resetHumidityMinMax, resetTemperatureMinMax, selectHumidity, selectTemperature, setHumidity, setTemperature } from '../state/ClimateSlice';
 
 interface ValueProps
 {
@@ -8,39 +10,28 @@ interface ValueProps
   title: string;
 }
 
-interface Tuple
-{
-  value: number|undefined;
-  min: number|undefined;
-  max: number|undefined;
-}
-
 export const ValueControl: React.FC<ValueProps> = ({valueType, sensor, title}: ValueProps) =>
 {
-  const [tuple, setTuple] = useState<Tuple>({value:undefined, min:undefined, max:undefined});
+  const tuple = useSelector(valueType === 'temperature' ? selectTemperature : selectHumidity);
+  const dispatch = useDispatch();
+  const setValue = valueType === 'temperature' ? setTemperature : setHumidity;
+  const resetMinMax = valueType === 'temperature' ? resetTemperatureMinMax : resetHumidityMinMax;
 
   useEffect(() =>
   {
     function sensorValueChanged(newValue: number)
     {
-      setTuple(oldTuple => ({
-        value: newValue,
-        min: !oldTuple.min || newValue < oldTuple.min ? newValue : oldTuple.min,
-        max: !oldTuple.max || newValue > oldTuple.max ? newValue : oldTuple.max,
-      }));
+      dispatch(setValue(newValue));
     }
 
     sensor.on(valueType, sensorValueChanged);
 
     return () => sensor.off(valueType, sensorValueChanged);
 
-  }, [valueType, sensor]);
+  }, [valueType, sensor, dispatch, setValue]);
 
   const clearButtonClicked = () => {
-    setTuple({
-      value: tuple.value,
-      min:tuple.value,
-      max:tuple.value});
+    dispatch(resetMinMax());
   };
 
   const displayValue = (valueToDisplay: number|undefined) => {
@@ -59,7 +50,7 @@ export const ValueControl: React.FC<ValueProps> = ({valueType, sensor, title}: V
         <span style={{fontSize:'2em'}}>{displayValue(tuple.max)}</span>
         <span> </span>
         <span style={{fontSize: '0.75em'}}>high</span>
+        <button onClick={clearButtonClicked}>Clear</button>
       </div>
     </div>);
 };
-// <button onClick={clearButtonClicked}>Clear</button>
