@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { Sensor } from '../lib/Sensor';
 import { resetHumidityMinMax, resetTemperatureMinMax, selectHumidity, selectTemperature, setHumidity, setTemperature } from '../state/ClimateSlice';
@@ -14,21 +14,21 @@ export const ValueControl: React.FC<ValueProps> = ({valueType, sensor, title}: V
 {
   const tuple = useSelector(valueType === 'temperature' ? selectTemperature : selectHumidity);
   const dispatch = useDispatch();
-  const setValue = valueType === 'temperature' ? setTemperature : setHumidity;
+  // const setValue = valueType === 'temperature' ? setTemperature : setHumidity;
   const resetMinMax = valueType === 'temperature' ? resetTemperatureMinMax : resetHumidityMinMax;
 
-  useEffect(() =>
-  {
-    function sensorValueChanged(newValue: number)
-    {
-      dispatch(setValue(newValue));
-    }
+  //useEffect(() =>
+  //{
+    // function sensorValueChanged(newValue: number)
+    // {
+    //   dispatch(setValue(newValue));
+    // }
 
-    sensor.on(valueType, sensorValueChanged);
+    //sensor.on(valueType, sensorValueChanged);
 
-    return () => sensor.off(valueType, sensorValueChanged);
+    //return () => sensor.off(valueType, sensorValueChanged);
 
-  }, [valueType, sensor, dispatch, setValue]);
+  //}, [valueType, sensor, dispatch, setValue]);
 
   const clearButtonClicked = () => {
     dispatch(resetMinMax());

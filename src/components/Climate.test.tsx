@@ -1,9 +1,9 @@
 import { render } from '@testing-library/react';
 import React from 'react'
-
+import { Provider } from 'react-redux';
 import { testSensor } from '../lib/Sensor';
-
 import Climate from './Climate';
+import { store } from '../index';
 
 test('Climate app shows the current temperature (example usage of test sensor)', async () => {
     // It's important to use `testSensor` for the tests, instead of the "real"
@@ -12,7 +12,10 @@ test('Climate app shows the current temperature (example usage of test sensor)',
     //    which would slow down our tests.
     // 2. Predictability: the real sensor generates random values, which is
     //    almost impossible to test. We need to control the emitted values.
-    const { findByText } = render(<Climate sensor={testSensor} />);
+    const { findByText } = render(
+        <Provider store={store}>
+            <Climate sensor={testSensor} />
+        </Provider>);
 
     // No value from the sensor yet, so "-" is shown.
     expect(await findByText(/temperature:/i)).toHaveTextContent('-');
